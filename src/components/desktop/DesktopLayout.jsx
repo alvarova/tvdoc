@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useWordPressPosts } from '../../hooks/useWordPress';
+import { useWordPressVideos } from '../../hooks/useWordPress';
 import Header from '../common/Header';
 import ArticleCard, { ArticleCardSkeleton } from '../common/ArticleCard';
 import './DesktopLayout.css';
@@ -11,14 +11,14 @@ import './DesktopLayout.css';
 const DesktopLayout = ({ showCategory = false, showSearch = false }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   
-  // Obtener posts principales
+  // Obtener videos principales
   const { 
     posts, 
     loading, 
     error, 
     totalPages, 
     refreshPosts 
-  } = useWordPressPosts({ 
+  } = useWordPressVideos({ 
     page: 1, 
     perPage: 12,
     autoFetch: true 
@@ -53,10 +53,10 @@ const DesktopLayout = ({ showCategory = false, showSearch = false }) => {
                 </section>
               )}
 
-              {/* Grid de artículos principales */}
+              {/* Grid de videos principales */}
               <section className="desktop-layout__articles">
                 <h2 className="desktop-layout__section-title">
-                  Últimas Noticias
+                  Últimos Videos
                 </h2>
                 
                 {loading ? (
@@ -67,7 +67,7 @@ const DesktopLayout = ({ showCategory = false, showSearch = false }) => {
                   </div>
                 ) : error ? (
                   <div className="desktop-layout__error">
-                    <p>Error al cargar las noticias. Por favor, intenta nuevamente.</p>
+                    <p>Error al cargar los videos. Por favor, intenta nuevamente.</p>
                     <button 
                       onClick={refreshPosts}
                       className="desktop-layout__retry-button"

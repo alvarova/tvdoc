@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useWordPressPosts } from '../../hooks/useWordPress';
+import { useWordPressVideos } from '../../hooks/useWordPress';
 import Header from '../common/Header';
 import './MobileLayout.css';
 
@@ -10,13 +10,13 @@ import './MobileLayout.css';
 const MobileLayout = ({ showCategory = false, showSearch = false }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   
-  // Obtener posts para los diferentes slides
+  // Obtener videos para los diferentes slides
   const { 
     posts, 
     loading, 
     error, 
     refreshPosts 
-  } = useWordPressPosts({ 
+  } = useWordPressVideos({ 
     page: 1, 
     perPage: 15, // 7 para el primer slide + 4 + 4 para los siguientes
     autoFetch: true 
@@ -70,19 +70,19 @@ const MobileLayout = ({ showCategory = false, showSearch = false }) => {
         {loading ? (
           <div className="mobile-layout__loading">
             <div className="mobile-layout__loading-spinner"></div>
-            <p>Cargando noticias...</p>
+            <p>Cargando videos...</p>
           </div>
         ) : error ? (
           <div className="mobile-layout__error">
-            <p>Error al cargar las noticias</p>
+            <p>Error al cargar los videos</p>
             <button onClick={refreshPosts}>Reintentar</button>
           </div>
         ) : (
           <>
-            {/* Primer slide - 7 artículos más recientes */}
+            {/* Primer slide - 7 videos más recientes */}
             {firstSlideArticles.length > 0 && (
               <section className="mobile-layout__slide-section">
-                <h2 className="mobile-layout__slide-title">Últimas Noticias</h2>
+                <h2 className="mobile-layout__slide-title">Últimos Videos</h2>
                 <div className="mobile-layout__articles-slider" id="slider-1">
                   <div className="mobile-layout__articles-container">
                     {firstSlideArticles.map((post, index) => (
@@ -137,10 +137,10 @@ const MobileLayout = ({ showCategory = false, showSearch = false }) => {
               </div>
             </section>
 
-            {/* Segundo slide - 4 artículos */}
+            {/* Segundo slide - 4 videos */}
             {secondSlideArticles.length > 0 && (
               <section className="mobile-layout__slide-section">
-                <h2 className="mobile-layout__slide-title">Más Noticias</h2>
+                <h2 className="mobile-layout__slide-title">Más Videos</h2>
                 <div className="mobile-layout__articles-slider" id="slider-2">
                   <div className="mobile-layout__articles-container">
                     {secondSlideArticles.map((post) => (
@@ -194,10 +194,10 @@ const MobileLayout = ({ showCategory = false, showSearch = false }) => {
               </div>
             </section>
 
-            {/* Tercer slide - 4 artículos */}
+            {/* Tercer slide - 4 videos */}
             {thirdSlideArticles.length > 0 && (
               <section className="mobile-layout__slide-section">
-                <h2 className="mobile-layout__slide-title">Destacados</h2>
+                <h2 className="mobile-layout__slide-title">Videos Destacados</h2>
                 <div className="mobile-layout__articles-slider" id="slider-3">
                   <div className="mobile-layout__articles-container">
                     {thirdSlideArticles.map((post) => (
