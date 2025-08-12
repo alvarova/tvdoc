@@ -154,10 +154,44 @@ export const useWordPressPost = (postId) => {
 };
 
 /**
- * Hook para búsqueda de posts
+ * Hook para obtener un video específico por slug
+ * @param {string} videoSlug - Slug del video
+ * @returns {Object} Estado del video
+ */
+export const useWordPressVideo = (videoSlug) => {
+  const [video, setVideo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!videoSlug) return;
+
+    const fetchVideo = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const videoData = await WordPressService.getVideoBySlug(videoSlug);
+        setVideo(videoData);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching video:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVideo();
+  }, [videoSlug]);
+
+  return { video, loading, error };
+};
+
+/**
+ * Hook para búsqueda de videos
  * @returns {Object} Estado y funciones de búsqueda
  */
-export const useWordPressSearch = () => {
+export const useWordPressVideoSearch = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -174,11 +208,11 @@ export const useWordPressSearch = () => {
     setSearchTerm(term);
     
     try {
-      const response = await WordPressService.searchPosts(term, page, perPage);
+      const response = await WordPressService.searchVideos(term, page, perPage);
       setSearchResults(response.posts);
     } catch (err) {
       setError(err.message);
-      console.error('Error searching posts:', err);
+      console.error('Error searching videos:', err);
     } finally {
       setLoading(false);
     }
@@ -198,4 +232,34 @@ export const useWordPressSearch = () => {
     search,
     clearSearch
   };
+};
+
+/**
+ * Hook para obtener las categorías de videos
+ * @returns {Object} Estado de las categorías
+ */
+export const useWordPressCategories = () => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const categoriesData = await WordPressService.getVideoCategories();
+        setCategories(categoriesData);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching categories:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  return { categories, loading, error };
 };

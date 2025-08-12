@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useWordPressSearch } from '../../hooks/useWordPress';
+import { Link, useNavigate } from 'react-router-dom';
+import { useWordPressCategories } from '../../hooks/useWordPress';
 import './Header.css';
 
 /**
@@ -12,14 +12,14 @@ import './Header.css';
 const Header = ({ isMobile = false, onMenuToggle }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const { search, searchResults, loading } = useWordPressSearch();
+  const navigate = useNavigate();
+  const { categories, loading: categoriesLoading } = useWordPressCategories();
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      search(searchTerm);
-      // Redirigir a página de resultados si es necesario
-      // navigate(`/buscar?q=${encodeURIComponent(searchTerm)}`);
+      navigate(`/buscar?q=${encodeURIComponent(searchTerm)}`);
+      setShowSearch(false);
     }
   };
 
@@ -56,15 +56,13 @@ const Header = ({ isMobile = false, onMenuToggle }) => {
               <li className="header__nav-item">
                 <Link to="/" className="header__nav-link">Inicio</Link>
               </li>
-              <li className="header__nav-item">
-                <Link to="/categoria/noticias" className="header__nav-link">Noticias</Link>
-              </li>
-              <li className="header__nav-item">
-                <Link to="/categoria/documentales" className="header__nav-link">Documentales</Link>
-              </li>
-              <li className="header__nav-item">
-                <Link to="/categoria/entretenimiento" className="header__nav-link">Entretenimiento</Link>
-              </li>
+              {!categoriesLoading && categories.slice(0, 6).map(category => (
+                <li key={category.id} className="header__nav-item">
+                  <Link to={`/categoria/${category.slug}`} className="header__nav-link">
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
         )}
@@ -77,7 +75,7 @@ const Header = ({ isMobile = false, onMenuToggle }) => {
               <form onSubmit={handleSearchSubmit} className="header__search-form">
                 <input
                   type="text"
-                  placeholder="Buscar noticias..."
+                  placeholder="Buscar videos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="header__search-input"
@@ -85,7 +83,6 @@ const Header = ({ isMobile = false, onMenuToggle }) => {
                 <button 
                   type="submit" 
                   className="header__search-button"
-                  disabled={loading}
                 >
                   🔍
                 </button>
@@ -127,32 +124,6 @@ const Header = ({ isMobile = false, onMenuToggle }) => {
           )}
         </div>
       </div>
-
-      {/* Resultados de búsqueda (dropdown) */}
-      {searchResults.length > 0 && showSearch && (
-        <div className="header__search-results">
-          <div className="container">
-            <ul className="header__search-list">
-              {searchResults.slice(0, 5).map((post) => (
-                <li key={post.id} className="header__search-item">
-                  <Link 
-                    to={`/articulo/${post.slug}`}
-                    className="header__search-link"
-                    onClick={() => setShowSearch(false)}
-                  >
-                    <span className="header__search-title">
-                      {post.title.rendered}
-                    </span>
-                    <span className="header__search-date">
-                      {new Date(post.date).toLocaleDateString('es-AR')}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
     </header>
   );
 };
