@@ -1,246 +1,100 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { WordPressService } from '../services/wordpressApi';
 
 /**
- * Hook personalizado para obtener videos de WordPress
- * @param {Object} options - Opciones de configuración
- * @param {number} options.page - Página actual
- * @param {number} options.perPage - Videos por página
- * @param {string} options.categories - Categorías a filtrar
- * @param {boolean} options.autoFetch - Si debe cargar automáticamente
- * @returns {Object} Estado y funciones para manejar videos
+ * Hook para obtener videos de WordPress
  */
-export const useWordPressVideos = ({ 
-  page = 1, 
-  perPage = 10, 
-  categories = '', 
-  autoFetch = true 
-} = {}) => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
+export const useWordPressVideos = ({ page = 1, perPage = 10, categories = '', autoFetch = true } = {}) => {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalPosts, setTotalPosts] = useState(0);
 
-  const fetchVideos = async () => {
+  const fetchVideos = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
     try {
       const response = await WordPressService.getVideos(page, perPage, categories);
-      setPosts(response.posts);
+      setVideos(response.posts);
       setTotalPages(response.totalPages);
-      setTotalPosts(response.totalPosts);
     } catch (err) {
       setError(err.message);
-      console.error('Error fetching videos:', err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const refreshPosts = () => {
-    fetchVideos();
-  };
+  }, [page, perPage, categories]);
 
   useEffect(() => {
     if (autoFetch) {
       fetchVideos();
     }
-  }, [page, perPage, categories, autoFetch]);
+  }, [fetchVideos, autoFetch]);
 
-  return {
-    posts,
-    loading,
-    error,
-    totalPages,
-    totalPosts,
-    refreshPosts,
-    fetchPosts: fetchVideos
-  };
-};
-
-/**
- * Hook personalizado para obtener posts de WordPress
- * @param {Object} options - Opciones de configuración
- * @param {number} options.page - Página actual
- * @param {number} options.perPage - Posts por página
- * @param {string} options.categories - Categorías a filtrar
- * @param {boolean} options.autoFetch - Si debe cargar automáticamente
- * @returns {Object} Estado y funciones para manejar posts
- */
-export const useWordPressPosts = ({ 
-  page = 1, 
-  perPage = 10, 
-  categories = '', 
-  autoFetch = true 
-} = {}) => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalPosts, setTotalPosts] = useState(0);
-
-  const fetchPosts = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await WordPressService.getPosts(page, perPage, categories);
-      setPosts(response.posts);
-      setTotalPages(response.totalPages);
-      setTotalPosts(response.totalPosts);
-    } catch (err) {
-      setError(err.message);
-      console.error('Error fetching posts:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshPosts = () => {
-    fetchPosts();
-  };
-
-  useEffect(() => {
-    if (autoFetch) {
-      fetchPosts();
-    }
-  }, [page, perPage, categories, autoFetch]);
-
-  return {
-    posts,
-    loading,
-    error,
-    totalPages,
-    totalPosts,
-    refreshPosts,
-    fetchPosts
-  };
-};
-
-/**
- * Hook para obtener un post específico
- * @param {number} postId - ID del post
- * @returns {Object} Estado del post
- */
-export const useWordPressPost = (postId) => {
-  const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!postId) return;
-
-    const fetchPost = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const postData = await WordPressService.getPost(postId);
-        setPost(postData);
-      } catch (err) {
-        setError(err.message);
-        console.error('Error fetching post:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPost();
-  }, [postId]);
-
-  return { post, loading, error };
+  return { videos, loading, error, totalPages, fetchVideos };
 };
 
 /**
  * Hook para obtener un video específico por slug
- * @param {string} videoSlug - Slug del video
- * @returns {Object} Estado del video
  */
-export const useWordPressVideo = (videoSlug) => {
+export const useWordPressVideo = (slug) => {
   const [video, setVideo] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!videoSlug) return;
-
+    if (!slug) return;
     const fetchVideo = async () => {
       setLoading(true);
       setError(null);
-
       try {
-        const videoData = await WordPressService.getVideoBySlug(videoSlug);
+        const videoData = await WordPressService.getVideo(slug); // Assuming getVideo fetches by slug now
         setVideo(videoData);
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching video:', err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchVideo();
-  }, [videoSlug]);
+  }, [slug]);
 
   return { video, loading, error };
 };
 
 /**
  * Hook para búsqueda de videos
- * @returns {Object} Estado y funciones de búsqueda
  */
-export const useWordPressVideoSearch = () => {
+export const useWordPressSearch = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
-  const search = async (term, page = 1, perPage = 10) => {
-    if (!term.trim()) {
+  const searchVideos = useCallback(async (searchTerm, page = 1, perPage = 10) => {
+    if (!searchTerm.trim()) {
       setSearchResults([]);
       return;
     }
-
     setLoading(true);
     setError(null);
-    setSearchTerm(term);
-    
     try {
-      const response = await WordPressService.searchVideos(term, page, perPage);
+      const response = await WordPressService.searchVideos(searchTerm, page, perPage);
       setSearchResults(response.posts);
     } catch (err) {
       setError(err.message);
-      console.error('Error searching videos:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const clearSearch = () => {
-    setSearchResults([]);
-    setSearchTerm('');
-    setError(null);
-  };
-
-  return {
-    searchResults,
-    loading,
-    error,
-    searchTerm,
-    search,
-    clearSearch
-  };
+  return { searchResults, loading, error, searchVideos };
 };
 
 /**
  * Hook para obtener las categorías de videos
- * @returns {Object} Estado de las categorías
  */
 export const useWordPressCategories = () => {
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -248,18 +102,70 @@ export const useWordPressCategories = () => {
       setLoading(true);
       setError(null);
       try {
-        const categoriesData = await WordPressService.getVideoCategories();
-        setCategories(categoriesData);
+        const data = await WordPressService.getVideoCategories();
+        setCategories(data);
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching categories:', err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
   return { categories, loading, error };
+};
+
+/**
+ * Hook para obtener las páginas
+ */
+export const useWordPressPages = () => {
+  const [pages, setPages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPages = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await WordPressService.getPages();
+        setPages(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPages();
+  }, []);
+
+  return { pages, loading, error };
+};
+
+/**
+ * Hook para obtener las posiciones de los videos
+ */
+export const useWordPressVideoPositions = () => {
+    const [positions, setPositions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+      const fetchPositions = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const data = await WordPressService.getVideoPositions();
+          setPositions(data);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchPositions();
+    }, []);
+
+    return { positions, loading, error };
 };

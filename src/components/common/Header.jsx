@@ -1,127 +1,96 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWordPressCategories } from '../../hooks/useWordPress';
 import './Header.css';
 
-/**
- * Componente Header común para desktop y mobile
- * @param {Object} props - Props del componente
- * @param {boolean} props.isMobile - Si es vista móvil
- * @param {Function} props.onMenuToggle - Función para toggle del menú móvil
- */
-const Header = ({ isMobile = false, onMenuToggle }) => {
+const Header = ({ isMobile, onMenuToggle }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
+  const [currentDate, setCurrentDate] = useState('');
   const navigate = useNavigate();
   const { categories, loading: categoriesLoading } = useWordPressCategories();
+
+  useEffect(() => {
+    const date = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    setCurrentDate(date.toLocaleDateString('es-AR', options));
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/buscar?q=${encodeURIComponent(searchTerm)}`);
-      setShowSearch(false);
-    }
-  };
-
-  const handleSearchToggle = () => {
-    setShowSearch(!showSearch);
-    if (showSearch) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
       setSearchTerm('');
     }
   };
 
   return (
-    <header className={`header ${isMobile ? 'header--mobile' : 'header--desktop'}`}>
-      <div className="header__container container">
-        {/* Logo */}
-        <div className="header__logo">
-          <Link to="/" className="header__logo-link">
-            <img 
-              src="/logo-tvdoc.png" 
-              alt="TVDoc" 
-              className="header__logo-image"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'inline';
-              }}
-            />
-            <span className="header__logo-text">TVDoc</span>
-          </Link>
+    <header className="site-header">
+      <div className="header-top-bar">
+        <div className="container">
+          <div className="header-top-bar__left">
+            <span className="header-top-bar__date">{currentDate}</span>
+            <span className="header-top-bar__temp">16°C</span>
+          </div>
+          <div className="header-top-bar__right">
+            <nav className="header-top-bar__nav">
+              <ul>
+                <li><Link to="/">Inicio</Link></li>
+                <li><Link to="/institucional">Institucional</Link></li>
+                <li><Link to="/contacto">Contacto</Link></li>
+              </ul>
+            </nav>
+          </div>
         </div>
+      </div>
 
-        {/* Navegación Desktop */}
-        {!isMobile && (
-          <nav className="header__nav">
-            <ul className="header__nav-list">
-              <li className="header__nav-item">
-                <Link to="/" className="header__nav-link">Inicio</Link>
-              </li>
-              {!categoriesLoading && categories.slice(0, 6).map(category => (
-                <li key={category.id} className="header__nav-item">
-                  <Link to={`/categoria/${category.slug}`} className="header__nav-link">
+      <div className="header-main">
+        <div className="container">
+          <div className="header-main__logo">
+            <Link to="/">
+              <img src="https://tvdoc.com.ar/wp-content/uploads/2021/03/logo.jpeg" alt="TvDoc" />
+            </Link>
+          </div>
+          <div className="header-main__social">
+            {/* Using text placeholders for icons */}
+            <a href="https://www.facebook.com/tvdocsantafe" target="_blank" rel="noopener noreferrer">F</a>
+            <a href="https://www.instagram.com/tvdoc.sf/" target="_blank" rel="noopener noreferrer">I</a>
+            <a href="https://twitter.com/tvdoc" target="_blank" rel="noopener noreferrer">T</a>
+            <a href="https://www.youtube.com/@TVDocSantaFe" target="_blank" rel="noopener noreferrer">Y</a>
+          </div>
+          <div className="header-main__search">
+            <form onSubmit={handleSearchSubmit}>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar..."
+              />
+              <button type="submit">🔍</button>
+            </form>
+          </div>
+          {isMobile && (
+            <button onClick={onMenuToggle} className="mobile-menu-toggle">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="header-category-bar">
+        <div className="container">
+          <nav className="header-category-bar__nav">
+            <ul>
+              {!categoriesLoading && categories.map(category => (
+                <li key={category.id}>
+                  <Link to={`/categoria/${category.slug}`}>
                     {category.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </nav>
-        )}
-
-        {/* Controles del header */}
-        <div className="header__controls">
-          {/* Búsqueda */}
-          <div className={`header__search ${showSearch ? 'header__search--active' : ''}`}>
-            {!isMobile || showSearch ? (
-              <form onSubmit={handleSearchSubmit} className="header__search-form">
-                <input
-                  type="text"
-                  placeholder="Buscar videos..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="header__search-input"
-                />
-                <button 
-                  type="submit" 
-                  className="header__search-button"
-                >
-                  🔍
-                </button>
-              </form>
-            ) : (
-              <button 
-                onClick={handleSearchToggle}
-                className="header__search-toggle"
-                aria-label="Abrir búsqueda"
-              >
-                🔍
-              </button>
-            )}
-            
-            {isMobile && showSearch && (
-              <button 
-                onClick={handleSearchToggle}
-                className="header__search-close"
-                aria-label="Cerrar búsqueda"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* Menú hamburguesa para móvil */}
-          {isMobile && (
-            <button 
-              onClick={onMenuToggle}
-              className="header__menu-toggle"
-              aria-label="Abrir menú"
-            >
-              <span className="header__menu-icon">
-                <span></span>
-                <span></span>
-                <span></span>
-              </span>
-            </button>
-          )}
         </div>
       </div>
     </header>

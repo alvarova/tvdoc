@@ -58,24 +58,18 @@ export const WordPressService = {
   },
 
   /**
-   * Obtiene un video específico por slug
-   * @param {string} slug - Slug del video
+   * Obtiene un video específico por ID
+   * @param {number} id - ID del video
    * @returns {Promise} Promesa con los datos del video
    */
-  async getVideoBySlug(slug) {
+  async getVideo(id) {
     try {
-      const response = await wordpressAPI.get('/video', {
-        params: {
-          slug,
-          _embed: true
-        }
+      const response = await wordpressAPI.get(`/video/${id}`, {
+        params: { _embed: true }
       });
-      if (response.data.length > 0) {
-        return response.data[0];
-      }
-      throw new Error(`Video with slug ${slug} not found`);
+      return response.data;
     } catch (error) {
-      throw new Error(`Error fetching video by slug ${slug}: ${error.message}`);
+      throw new Error(`Error fetching video ${id}: ${error.message}`);
     }
   },
 
@@ -109,80 +103,12 @@ export const WordPressService = {
   },
 
   /**
-   * Obtiene los posts más recientes
-   * @param {number} page - Número de página (por defecto 1)
-   * @param {number} perPage - Posts por página (por defecto 10)
-   * @param {string} categories - IDs de categorías separadas por coma
-   * @returns {Promise} Promesa con los datos de los posts
-   */
-  async getPosts(page = 1, perPage = 10, categories = '') {
-    try {
-      const params = {
-        page,
-        per_page: perPage,
-        _embed: true, // Incluye media y otros datos relacionados
-        status: 'publish',
-        orderby: 'date',
-        order: 'desc'
-      };
-
-      if (categories) {
-        params.categories = categories;
-      }
-
-      const response = await wordpressAPI.get('/posts', { params });
-      return {
-        posts: response.data,
-        totalPages: parseInt(response.headers['x-wp-totalpages']) || 1,
-        totalPosts: parseInt(response.headers['x-wp-total']) || 0
-      };
-    } catch (error) {
-      throw new Error(`Error fetching posts: ${error.message}`);
-    }
-  },
-
-  /**
-   * Obtiene un post específico por ID
-   * @param {number} id - ID del post
-   * @returns {Promise} Promesa con los datos del post
-   */
-  async getPost(id) {
-    try {
-      const response = await wordpressAPI.get(`/posts/${id}`, {
-        params: { _embed: true }
-      });
-      return response.data;
-    } catch (error) {
-      throw new Error(`Error fetching post ${id}: ${error.message}`);
-    }
-  },
-
-  /**
-   * Obtiene las taxonomías disponibles
-   * @returns {Promise} Promesa con las taxonomías
-   */
-  async getTaxonomies() {
-    try {
-      const response = await wordpressAPI.get('/taxonomies');
-      return response.data;
-    } catch (error) {
-      throw new Error(`Error fetching taxonomies: ${error.message}`);
-    }
-  },
-
-  /**
-   * Obtiene las categorías de videos disponibles
+   * Obtiene las categorías de videos
    * @returns {Promise} Promesa con las categorías de videos
    */
   async getVideoCategories() {
     try {
-      const response = await wordpressAPI.get('/video_category', {
-        params: {
-          per_page: 100, // Traer hasta 100 categorías
-          orderby: 'count',
-          order: 'desc',
-        }
-      });
+      const response = await wordpressAPI.get('/categoria_de_video');
       return response.data;
     } catch (error) {
       throw new Error(`Error fetching video categories: ${error.message}`);
@@ -190,44 +116,28 @@ export const WordPressService = {
   },
 
   /**
-   * Obtiene las categorías de posts disponibles
-   * @returns {Promise} Promesa con las categorías
+   * Obtiene las posiciones de los videos para la home
+   * @returns {Promise} Promesa con las posiciones de los videos
    */
-  async getPostCategories() {
+  async getVideoPositions() {
     try {
-      const response = await wordpressAPI.get('/categories');
+      const response = await wordpressAPI.get('/posicion_de_video');
       return response.data;
     } catch (error) {
-      throw new Error(`Error fetching post categories: ${error.message}`);
+      throw new Error(`Error fetching video positions: ${error.message}`);
     }
   },
 
   /**
-   * Busca posts por término
-   * @param {string} searchTerm - Término de búsqueda
-   * @param {number} page - Número de página
-   * @param {number} perPage - Posts por página
-   * @returns {Promise} Promesa con los resultados de búsqueda
+   * Obtiene las páginas (para Institucional, Contacto, etc.)
+   * @returns {Promise} Promesa con los datos de las páginas
    */
-  async searchPosts(searchTerm, page = 1, perPage = 10) {
+  async getPages() {
     try {
-      const response = await wordpressAPI.get('/posts', {
-        params: {
-          search: searchTerm,
-          page,
-          per_page: perPage,
-          _embed: true,
-          status: 'publish'
-        }
-      });
-      
-      return {
-        posts: response.data,
-        totalPages: parseInt(response.headers['x-wp-totalpages']) || 1,
-        totalPosts: parseInt(response.headers['x-wp-total']) || 0
-      };
+      const response = await wordpressAPI.get('/pages');
+      return response.data;
     } catch (error) {
-      throw new Error(`Error searching posts: ${error.message}`);
+      throw new Error(`Error fetching pages: ${error.message}`);
     }
   }
 };
