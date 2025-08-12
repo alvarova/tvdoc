@@ -6,7 +6,10 @@ import useResponsive from './hooks/useResponsive';
 // Importar componentes principales
 import DesktopLayout from './components/desktop/DesktopLayout';
 import MobileLayout from './components/mobile/MobileLayout';
-import ArticlePage from './components/common/ArticlePage';
+import HomePage from './components/pages/HomePage';
+import CategoryPage from './components/pages/CategoryPage';
+import SearchPage from './components/pages/SearchPage';
+import VideoPage from './components/pages/VideoPage';
 import NotFound from './components/common/NotFound';
 
 // Importar estilos
@@ -27,37 +30,28 @@ function App() {
       <Router>
         <div className="app">
           <Routes>
-            {/* Ruta principal - Homepage con layout responsivo */}
+            {/* Ruta principal - Homepage */}
             <Route 
               path="/" 
-              element={<Layout />} 
+              element={<Layout><HomePage /></Layout>}
             />
             
-            {/* Ruta para artículos individuales */}
+            {/* Ruta para videos individuales */}
             <Route 
-              path="/articulo/:slug" 
-              element={
-                <ArticlePage 
-                  isMobile={isMobile} 
-                  isTablet={isTablet} 
-                />
-              } 
+              path="/video/:slug"
+              element={<VideoPage isMobile={isMobile} />}
             />
             
             {/* Ruta para categorías */}
             <Route 
               path="/categoria/:categorySlug" 
-              element={
-                <Layout showCategory={true} />
-              } 
+              element={<Layout><CategoryPage /></Layout>}
             />
             
             {/* Ruta para búsqueda */}
             <Route 
               path="/buscar" 
-              element={
-                <Layout showSearch={true} />
-              } 
+              element={<Layout><SearchPage /></Layout>}
             />
             
             {/* Página 404 */}

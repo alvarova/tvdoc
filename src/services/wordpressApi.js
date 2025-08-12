@@ -58,18 +58,24 @@ export const WordPressService = {
   },
 
   /**
-   * Obtiene un video específico por ID
-   * @param {number} id - ID del video
+   * Obtiene un video específico por slug
+   * @param {string} slug - Slug del video
    * @returns {Promise} Promesa con los datos del video
    */
-  async getVideo(id) {
+  async getVideoBySlug(slug) {
     try {
-      const response = await wordpressAPI.get(`/video/${id}`, {
-        params: { _embed: true }
+      const response = await wordpressAPI.get('/video', {
+        params: {
+          slug,
+          _embed: true
+        }
       });
-      return response.data;
+      if (response.data.length > 0) {
+        return response.data[0];
+      }
+      throw new Error(`Video with slug ${slug} not found`);
     } catch (error) {
-      throw new Error(`Error fetching video ${id}: ${error.message}`);
+      throw new Error(`Error fetching video by slug ${slug}: ${error.message}`);
     }
   },
 
@@ -152,15 +158,47 @@ export const WordPressService = {
   },
 
   /**
-   * Obtiene las categorías disponibles
+   * Obtiene las taxonomías disponibles
+   * @returns {Promise} Promesa con las taxonomías
+   */
+  async getTaxonomies() {
+    try {
+      const response = await wordpressAPI.get('/taxonomies');
+      return response.data;
+    } catch (error) {
+      throw new Error(`Error fetching taxonomies: ${error.message}`);
+    }
+  },
+
+  /**
+   * Obtiene las categorías de videos disponibles
+   * @returns {Promise} Promesa con las categorías de videos
+   */
+  async getVideoCategories() {
+    try {
+      const response = await wordpressAPI.get('/video_category', {
+        params: {
+          per_page: 100, // Traer hasta 100 categorías
+          orderby: 'count',
+          order: 'desc',
+        }
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(`Error fetching video categories: ${error.message}`);
+    }
+  },
+
+  /**
+   * Obtiene las categorías de posts disponibles
    * @returns {Promise} Promesa con las categorías
    */
-  async getCategories() {
+  async getPostCategories() {
     try {
       const response = await wordpressAPI.get('/categories');
       return response.data;
     } catch (error) {
-      throw new Error(`Error fetching categories: ${error.message}`);
+      throw new Error(`Error fetching post categories: ${error.message}`);
     }
   },
 
